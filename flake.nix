@@ -39,7 +39,7 @@
             ###################################################################
             apps = {
               default = simple_script "pdf_split" [] ''
-                python currency-convert.py "''$@"
+                python ${self}/currency-convert.py "''$@"
               '';
             };
 
