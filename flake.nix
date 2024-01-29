@@ -32,6 +32,8 @@
             program = "${exec}/bin/${name}";
           };
 
+          pyscript = "${self}//currency-convert.py";
+
         in with pkgs;
           {
             ###################################################################
@@ -39,7 +41,7 @@
             ###################################################################
             apps = {
               default = simple_script "pdf_split" [] ''
-                python ${self}/currency-convert.py "''$@"
+                python ${pyscript} "''$@"
               '';
             };
 
