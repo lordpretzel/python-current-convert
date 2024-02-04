@@ -32,7 +32,7 @@
             program = "${exec}/bin/${name}";
           };
 
-          pyscript = "${self}//currency-convert.py";
+          pyscript = "${self}/currency-convert.py";
 
         in with pkgs;
           {
@@ -40,7 +40,7 @@
             #                       running                                   #
             ###################################################################
             apps = {
-              default = simple_script "pdf_split" [] ''
+              default = simple_script "pyscript" [] ''
                 python ${pyscript} "''$@"
               '';
             };
