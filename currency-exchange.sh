@@ -1,1 +1,1 @@
-python currency-convert.py $@
+python currency-exchange.py $@

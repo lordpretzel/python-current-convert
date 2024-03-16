@@ -18,21 +18,19 @@
           requirements-txt = "${self}/requirements.txt";
 
           # python environment
-          mypython = with pkgs;
-            [
-              (mach-nix.lib."${system}".mkPython {
+          mypython = 
+              mach-nix.lib."${system}".mkPython {
                 requirements = builtins.readFile requirements-txt;
-              })
-            ];
+              };
+
+          #pybin = "${mypython.python}/bin/python";
           
           # Utility to run a script easily in the flakes app
           simple_script = name: add_deps: text: let
             exec = pkgs.writeShellApplication {
               inherit name text;
               runtimeInputs = with pkgs; [
-                (mach-nix.lib."${system}".mkPython {
-                  requirements = builtins.readFile requirements-txt;
-                })
+                mypython
               ] ++ add_deps;
             };
           in {
@@ -40,8 +38,12 @@
             program = "${exec}/bin/${name}";
           };
 
-          pyscript = "${self}/currency-exchange.py";
+          # the python script to wrap as an app
+          script-name = "currency-exchange.py";
+          pyscript = "${self}/${script-name}";
 
+          #pypyt = builtins.trace mypython.python "";
+          
         in with pkgs;
           {
             ###################################################################
@@ -49,18 +51,22 @@
             ###################################################################
             packages = {
               currency-exchange = stdenv.mkDerivation {
+                name="currency-exchange-1.0";
+                src = ./.;
+                
                 runtimeInputs = [ mypython ];
                 buildInputs = [ mypython ];
-                src = ./.;
-                name="currency-exchange";
+                nativeBuildInputs = [ makeWrapper ];
                 installPhase = ''
                   mkdir -p $out/bin/
-                  cp ${self}/currency-exchange.sh $out/bin/currency-exchange
-                '';
-                
+                  mkdir -p $out/share/
+                  cp ${pyscript} $out/share/currency-exchange.py
+                  makeWrapper ${mypython}/bin/python $out/bin/currency-exchange --add-flags "$out/share/${script-name}" 
+                '';                
               };
             };
-            
+#makeWrapper python $out/bin/currency-exchange --add-flags "$out/share/${script-name}"
+            #                  cp ${self}/currency-exchange.sh $out/bin/currency-exchange
             ###################################################################
             #                       running                                   #
             ###################################################################
@@ -73,10 +79,12 @@
             ###################################################################
             #                       development shell                         #
             ###################################################################
-            devShells.default = mach-nix.lib."${system}".mkPythonShell # mkShell
+            devShells.default = mkShell
               {
-                # requirement
-                requirements = builtins.readFile requirements-txt;
+                runtimeInputs = [ mypython ];
+#                 shell-hook = ''
+#                   echo "${mypython.python.pkgs.python}"
+# '';
               };
           }
       );
