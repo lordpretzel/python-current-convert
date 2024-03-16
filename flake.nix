@@ -1,5 +1,5 @@
 {
-  description = "Convert currencies at certain date";
+  description = "Convert currencies as of certain date";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
@@ -17,6 +17,14 @@
 
           requirements-txt = "${self}/requirements.txt";
 
+          # python environment
+          mypython = with pkgs;
+            [
+              (mach-nix.lib."${system}".mkPython {
+                requirements = builtins.readFile requirements-txt;
+              })
+            ];
+          
           # Utility to run a script easily in the flakes app
           simple_script = name: add_deps: text: let
             exec = pkgs.writeShellApplication {
@@ -32,10 +40,27 @@
             program = "${exec}/bin/${name}";
           };
 
-          pyscript = "${self}/currency-convert.py";
+          pyscript = "${self}/currency-exchange.py";
 
         in with pkgs;
           {
+            ###################################################################
+            #                       package                                   #
+            ###################################################################
+            packages = {
+              currency-exchange = stdenv.mkDerivation {
+                runtimeInputs = [ mypython ];
+                buildInputs = [ mypython ];
+                src = ./.;
+                name="currency-exchange";
+                installPhase = ''
+                  mkdir -p $out/bin/
+                  cp ${self}/currency-exchange.sh $out/bin/currency-exchange
+                '';
+                
+              };
+            };
+            
             ###################################################################
             #                       running                                   #
             ###################################################################
