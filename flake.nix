@@ -82,7 +82,13 @@
                 ];
                 runtimeInputs = [ mypython ];
                 shellHook = ''
-                  echo "Using virtual environment with Python ${mypython.python} with packages ${requirements-as-text}" | chara say
+                  echo "Using virtual environment with Python:
+
+$(python --version)
+
+with packages
+
+$(pip list)" | chara say -f null.chara
                 '';
               };
           }
