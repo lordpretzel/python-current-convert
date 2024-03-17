@@ -2,7 +2,7 @@
   description = "Convert currencies as of certain date";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
     flake-utils.url = "github:numtide/flake-utils";
     mach-nix.url = "github:DavHau/mach-nix";
   };
@@ -16,15 +16,14 @@
           };
 
           requirements-txt = "${self}/requirements.txt";
-
+          requirements-as-text = builtins.readFile requirements-txt;
+          
           # python environment
           mypython = 
               mach-nix.lib."${system}".mkPython {
                 requirements = builtins.readFile requirements-txt;
               };
 
-          #pybin = "${mypython.python}/bin/python";
-          
           # Utility to run a script easily in the flakes app
           simple_script = name: add_deps: text: let
             exec = pkgs.writeShellApplication {
@@ -39,11 +38,9 @@
           };
 
           # the python script to wrap as an app
-          script-name = "currency-exchange.py";
-          pyscript = "${self}/${script-name}";
-
-          #pypyt = builtins.trace mypython.python "";
-          
+          script-base-name = "currency-exchange";
+          script-name = "${script-base-name}.py";
+          pyscript = "${self}/${script-name}";          
         in with pkgs;
           {
             ###################################################################
@@ -60,13 +57,11 @@
                 installPhase = ''
                   mkdir -p $out/bin/
                   mkdir -p $out/share/
-                  cp ${pyscript} $out/share/currency-exchange.py
-                  makeWrapper ${mypython}/bin/python $out/bin/currency-exchange --add-flags "$out/share/${script-name}" 
+                  cp ${pyscript} $out/share/${script-name}
+                  makeWrapper ${mypython}/bin/python $out/bin/${script-base-name} --add-flags "$out/share/${script-name}" 
                 '';                
               };
             };
-#makeWrapper python $out/bin/currency-exchange --add-flags "$out/share/${script-name}"
-            #                  cp ${self}/currency-exchange.sh $out/bin/currency-exchange
             ###################################################################
             #                       running                                   #
             ###################################################################
@@ -81,10 +76,14 @@
             ###################################################################
             devShells.default = mkShell
               {
+                buildInputs = [
+                  pkgs.charasay
+                  mypython
+                ];
                 runtimeInputs = [ mypython ];
-#                 shell-hook = ''
-#                   echo "${mypython.python.pkgs.python}"
-# '';
+                shellHook = ''
+                  echo "Using virtual environment with Python ${mypython.python} with packages ${requirements-as-text}" | chara say
+                '';
               };
           }
       );
