@@ -1,9 +1,11 @@
 #!/usr/bin/env -S nix develop . --command python
 
 from datetime import datetime
-from forex_python.converter import get_rate
+#from forex_python.converter import get_rate
 import sys
 import argparse as ap
+import requests
+# import json
 
 """
 Convert currencies at certain date.
@@ -11,8 +13,25 @@ Convert currencies at certain date.
 
 __author__ = 'Boris Glavic'
 
-def main(d,fromc,toc):
-    print(get_rate(fromc, toc, d))
+FIXER_URL = "http://data.fixer.io/api/latest"
+API_KEY = "d0bba9a8110469675c11c5a5ba833672"
+
+def fixer_exchange_rate(hist_date, from_currency, to_currency):
+    params = {
+        "access_key": API_KEY,
+        "symbols": from_currency + "," + to_currency
+    }    
+    response = requests.get(FIXER_URL, params=params, timeout=1000)
+    if response.status_code == 200:
+        data = response.json()
+        #print(data)
+        from_rate = float(data["rates"][from_currency])
+        to_rate = float(data["rates"][to_currency])
+        result_rate = to_rate / from_rate
+        return result_rate
+        
+# def main(d,fromc,toc):
+#     print(get_rate(fromc, toc, d))
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser(description='Convert currencies')
@@ -30,4 +49,4 @@ if __name__ == '__main__':
     else:
         d = datetime.now()
 
-    main(d, args.from_currency,args.to_currency)
+    fixer_exchange_rate(d, args.from_currency,args.to_currency)
