@@ -17,16 +17,27 @@
 
           requirements-txt = "${self}/requirements.txt";
           requirements-as-text = builtins.readFile requirements-txt;
+
+          development-requirements-as-text = requirements-as-text +  ''
+pip
+python-lsp-server[all]
+rich-cli
+mypy
+'';
+
+          python="python310";
           
           # python environment
           mypython = 
             mach-nix.lib."${system}".mkPython {
-              requirements = builtins.readFile requirements-txt;
+              inherit python;
+              requirements = requirements-as-text;
             };
 
           mydevpython =
             mach-nix.lib."${system}".mkPython {
-              requirements = requirements-as-text +  "\npip";
+              inherit python;
+              requirements = development-requirements-as-text;
             };
           
           # Utility to run a script easily in the flakes app
@@ -84,7 +95,6 @@
             devShells.default = mkShell
               {
                 buildInputs = [
-                  pkgs.rich-cli
                   mydevpython
                 ];
                 runtimeInputs = [ mydevpython ];
