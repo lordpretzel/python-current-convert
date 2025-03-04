@@ -25,10 +25,10 @@ rich-cli
 mypy
 '';
 
-          python="python310";
-          
+          python="python312";
+
           # python environment
-          mypython = 
+          mypython =
             mach-nix.lib."${system}".mkPython {
               inherit python;
               requirements = requirements-as-text;
@@ -39,7 +39,7 @@ mypy
               inherit python;
               requirements = development-requirements-as-text;
             };
-          
+
           # Utility to run a script easily in the flakes app
           simple_script = name: add_deps: text: let
             exec = pkgs.writeShellApplication {
@@ -68,7 +68,7 @@ mypy
               currency-exchange = stdenv.mkDerivation {
                 name="currency-exchange-1.0";
                 src = ./.;
-                
+
                 runtimeInputs = [ mypython ];
                 buildInputs = [ mypython ];
                 nativeBuildInputs = [ makeWrapper ];
@@ -76,8 +76,8 @@ mypy
                   mkdir -p $out/bin/
                   mkdir -p $out/share/
                   cp ${pyscript} $out/share/${script-name}
-                  makeWrapper ${mypython}/bin/python $out/bin/${script-base-name} --add-flags "$out/share/${script-name}" 
-                '';                
+                  makeWrapper ${mypython}/bin/python $out/bin/${script-base-name} --add-flags "$out/share/${script-name}"
+                '';
               };
             };
             ###################################################################
