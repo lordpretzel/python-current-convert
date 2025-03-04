@@ -25,7 +25,7 @@ rich-cli
 mypy
 '';
 
-          python="python312";
+          python="python311";
 
           # python environment
           mypython =
