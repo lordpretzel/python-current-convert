@@ -21,11 +21,10 @@
           development-requirements-as-text = requirements-as-text +  ''
 pip
 python-lsp-server[all]
-rich-cli
 mypy
 '';
 
-          python="python311";
+          python="python310";
 
           # python environment
           mypython =
@@ -96,17 +95,21 @@ mypy
               {
                 buildInputs = [
                   mydevpython
+                  charasay
                 ];
-                runtimeInputs = [ mydevpython ];
+                runtimeInputs = [
+                  mydevpython
+                  charasay
+                ];
                 shellHook = ''
                   alias pip="${mydevpython}/bin/pip --disable-pip-version-check"
-                  rich "[b white on black]Using virtual environment for [/][b white on red] ${package-name} [/][b white on black] with Python[/]
+                  chara say -f null.chara "Using virtual environment for ${package-name} with Python
 
-[b]$(python --version)[/]
+$(python --version)
 
-[b white on black]with packages[/]
+with packages
 
-$(${mydevpython}/bin/pip list --no-color --disable-pip-version-check)" --print --padding 1 -p -a heavy
+$(${mydevpython}/bin/pip list --no-color --disable-pip-version-check)"
                 '';
               };
           }
